@@ -35,7 +35,9 @@ def _get(url: str, params: dict | None = None) -> Any:
         except requests.exceptions.Timeout:
             logger.warning("Timeout on attempt %d: %s", attempt, url)
         except requests.exceptions.HTTPError as exc:
-            logger.warning("HTTP %s on attempt %d: %s", exc.response.status_code, attempt, url)
+            logger.warning(
+                "HTTP %s on attempt %d: %s", exc.response.status_code, attempt, url
+            )
         except requests.exceptions.RequestException as exc:
             logger.warning("Request error on attempt %d: %s — %s", attempt, url, exc)
 

@@ -25,6 +25,7 @@ def client():
     command.upgrade(alembic_cfg, "head")
 
     from src.api.main import app
+
     with TestClient(app) as c:
         yield c
 

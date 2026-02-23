@@ -3,10 +3,9 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import func, text
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.database.models import Alert, RouteStats, VehiclePosition
 from src.pipeline.cleaner import AlertRecord, VehiclePositionRecord
 
 logger = logging.getLogger(__name__)
@@ -15,7 +14,9 @@ logger = logging.getLogger(__name__)
 ON_TIME_THRESHOLD_SEC = 300
 
 
-def bulk_insert_positions(records: list[VehiclePositionRecord], session: Session) -> int:
+def bulk_insert_positions(
+    records: list[VehiclePositionRecord], session: Session
+) -> int:
     """Batch insert vehicle positions. Returns number of rows inserted."""
     if not records:
         return 0
@@ -114,9 +115,13 @@ def upsert_route_stats(session: Session, window_minutes: int = 5) -> None:
             "route": row.route,
             "mode": row.mode,
             "snapshot_at": snapshot_at,
-            "avg_delay_sec": float(row.avg_delay_sec) if row.avg_delay_sec is not None else None,
+            "avg_delay_sec": (
+                float(row.avg_delay_sec) if row.avg_delay_sec is not None else None
+            ),
             "vehicle_count": int(row.vehicle_count),
-            "on_time_pct": float(row.on_time_pct) if row.on_time_pct is not None else None,
+            "on_time_pct": (
+                float(row.on_time_pct) if row.on_time_pct is not None else None
+            ),
         }
         for row in rows
     ]

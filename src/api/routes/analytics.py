@@ -15,7 +15,9 @@ router = APIRouter()
 @router.get("/delays")
 def get_delay_rankings(
     hours: int = Query(24, ge=1, le=168, description="Lookback window in hours"),
-    mode: Optional[str] = Query(None, description="Filter by mode: bus | trolley | rail"),
+    mode: Optional[str] = Query(
+        None, description="Filter by mode: bus | trolley | rail"
+    ),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
@@ -143,9 +145,13 @@ def get_route_efficiency(
             {
                 "route": r.route,
                 "mode": r.mode,
-                "avg_on_time_pct": float(r.avg_on_time_pct) if r.avg_on_time_pct else None,
+                "avg_on_time_pct": (
+                    float(r.avg_on_time_pct) if r.avg_on_time_pct else None
+                ),
                 "avg_delay_sec": float(r.avg_delay_sec) if r.avg_delay_sec else None,
-                "avg_vehicle_count": int(r.avg_vehicle_count) if r.avg_vehicle_count else None,
+                "avg_vehicle_count": (
+                    int(r.avg_vehicle_count) if r.avg_vehicle_count else None
+                ),
             }
             for r in rows
         ],
@@ -155,11 +161,12 @@ def get_route_efficiency(
 @router.get("/summary")
 def get_summary(db: Session = Depends(get_db)):
     """Return a high-level system snapshot for the dashboard header."""
-    since_1h = datetime.now(timezone.utc) - timedelta(hours=1)
     since_24h = datetime.now(timezone.utc) - timedelta(hours=24)
 
     live = db.execute(
-        text("SELECT COUNT(DISTINCT vehicle_id) AS cnt FROM vehicle_positions WHERE fetched_at >= :since"),
+        text(
+            "SELECT COUNT(DISTINCT vehicle_id) AS cnt FROM vehicle_positions WHERE fetched_at >= :since"
+        ),
         {"since": datetime.now(timezone.utc) - timedelta(seconds=90)},
     ).fetchone()
 
@@ -177,7 +184,9 @@ def get_summary(db: Session = Depends(get_db)):
     ).fetchone()
 
     total_24h = db.execute(
-        text("SELECT COUNT(*) AS cnt FROM vehicle_positions WHERE fetched_at >= :since"),
+        text(
+            "SELECT COUNT(*) AS cnt FROM vehicle_positions WHERE fetched_at >= :since"
+        ),
         {"since": since_24h},
     ).fetchone()
 

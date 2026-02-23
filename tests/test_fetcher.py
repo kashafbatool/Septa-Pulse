@@ -19,7 +19,9 @@ def test_get_all_buses_returns_list(client):
     resp_lib.add(
         resp_lib.GET,
         f"{FAKE_BASE}/TransitViewAll/index.php",
-        json={"bus": [{"VehicleID": "1", "Route": "33", "lat": "39.95", "lng": "-75.16"}]},
+        json={
+            "bus": [{"VehicleID": "1", "Route": "33", "lat": "39.95", "lng": "-75.16"}]
+        },
         status=200,
     )
     buses = client.get_all_buses()
@@ -45,7 +47,15 @@ def test_get_train_positions_list(client):
     resp_lib.add(
         resp_lib.GET,
         f"{FAKE_BASE}/TrainView/index.php",
-        json=[{"trainno": "9315", "lat": "40.00", "lon": "-75.20", "line": "Media/Wawa", "late": "2"}],
+        json=[
+            {
+                "trainno": "9315",
+                "lat": "40.00",
+                "lon": "-75.20",
+                "line": "Media/Wawa",
+                "late": "2",
+            }
+        ],
         status=200,
     )
     trains = client.get_train_positions()
@@ -71,7 +81,11 @@ def test_get_alerts(client):
         resp_lib.GET,
         f"{FAKE_BASE}/Alerts/index.php",
         json=[
-            {"route_id": "33", "current_message": "Delays due to traffic", "advisory_message": ""},
+            {
+                "route_id": "33",
+                "current_message": "Delays due to traffic",
+                "advisory_message": "",
+            },
         ],
         status=200,
     )

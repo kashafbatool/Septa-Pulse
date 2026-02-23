@@ -33,13 +33,27 @@ POLL_INTERVAL = int(os.getenv("POLL_INTERVAL_SECONDS", "30"))
 def run_pipeline() -> dict:
     """Execute one full fetch → clean → load cycle. Returns a summary dict."""
     from src.database.connection import get_session
-    from src.pipeline.cleaner import clean_alert_records, clean_bus_records, clean_train_records
+    from src.pipeline.cleaner import (
+        clean_alert_records,
+        clean_bus_records,
+        clean_train_records,
+    )
     from src.pipeline.fetcher import SEPTAAPIError, SEPTAClient
-    from src.pipeline.loader import bulk_insert_alerts, bulk_insert_positions, upsert_route_stats
+    from src.pipeline.loader import (
+        bulk_insert_alerts,
+        bulk_insert_positions,
+        upsert_route_stats,
+    )
 
     start = datetime.now(timezone.utc)
     client = SEPTAClient()
-    summary: dict = {"started_at": start.isoformat(), "buses": 0, "trains": 0, "alerts": 0, "errors": []}
+    summary: dict = {
+        "started_at": start.isoformat(),
+        "buses": 0,
+        "trains": 0,
+        "alerts": 0,
+        "errors": [],
+    }
 
     # --- Fetch ---
     raw_buses, raw_trains, raw_alerts = [], [], []
@@ -65,7 +79,6 @@ def run_pipeline() -> dict:
         summary["errors"].append(f"alerts: {exc}")
 
     # --- Clean ---
-    fetched_at = datetime.now(timezone.utc)
     bus_records = clean_bus_records(raw_buses)
     train_records = clean_train_records(raw_trains)
     alert_records = clean_alert_records(raw_alerts)
@@ -93,6 +106,7 @@ def run_pipeline() -> dict:
 # AWS Lambda entry point
 # ---------------------------------------------------------------------------
 
+
 def handler(event: dict, context: object) -> dict:
     """AWS Lambda handler — invoked by EventBridge every 30 seconds."""
     logger.info("Lambda invoked: %s", event)
@@ -114,7 +128,9 @@ if __name__ == "__main__":
         logger.error("Initial pipeline run failed: %s", exc)
 
     scheduler = BlockingScheduler()
-    scheduler.add_job(run_pipeline, "interval", seconds=POLL_INTERVAL, id="septa_pipeline")
+    scheduler.add_job(
+        run_pipeline, "interval", seconds=POLL_INTERVAL, id="septa_pipeline"
+    )
     logger.info("Scheduler running. Press Ctrl+C to stop.")
     try:
         scheduler.start()

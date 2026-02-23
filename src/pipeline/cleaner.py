@@ -68,7 +68,9 @@ def _parse_offset(raw_offset: object) -> Optional[int]:
     return None
 
 
-def clean_bus_record(raw: dict, fetched_at: Optional[datetime] = None) -> Optional[VehiclePositionRecord]:
+def clean_bus_record(
+    raw: dict, fetched_at: Optional[datetime] = None
+) -> Optional[VehiclePositionRecord]:
     """Normalize a single bus/trolley record from TransitViewAll."""
     if fetched_at is None:
         fetched_at = datetime.now(timezone.utc)
@@ -103,7 +105,9 @@ def clean_bus_record(raw: dict, fetched_at: Optional[datetime] = None) -> Option
     )
 
 
-def clean_train_record(raw: dict, fetched_at: Optional[datetime] = None) -> Optional[VehiclePositionRecord]:
+def clean_train_record(
+    raw: dict, fetched_at: Optional[datetime] = None
+) -> Optional[VehiclePositionRecord]:
     """Normalize a single regional rail record from TrainView."""
     if fetched_at is None:
         fetched_at = datetime.now(timezone.utc)
@@ -139,7 +143,9 @@ def clean_train_record(raw: dict, fetched_at: Optional[datetime] = None) -> Opti
     )
 
 
-def clean_alert_record(raw: dict, fetched_at: Optional[datetime] = None) -> Optional[AlertRecord]:
+def clean_alert_record(
+    raw: dict, fetched_at: Optional[datetime] = None
+) -> Optional[AlertRecord]:
     """Normalize a single alert record."""
     if fetched_at is None:
         fetched_at = datetime.now(timezone.utc)

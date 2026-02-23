@@ -7,7 +7,9 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://septa:septa@localhost:5432/septapulse")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql://septa:septa@localhost:5432/septapulse"
+)
 
 engine = create_engine(
     DATABASE_URL,

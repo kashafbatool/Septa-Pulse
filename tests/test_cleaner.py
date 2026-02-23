@@ -1,5 +1,7 @@
 """Tests for the data cleaning / normalization layer."""
 
+import pytest
+
 from src.pipeline.cleaner import (
     clean_bus_record,
     clean_bus_records,
@@ -10,6 +12,7 @@ from src.pipeline.cleaner import (
 
 
 # ── Bus cleaning ──────────────────────────────────────────────
+
 
 def test_clean_bus_record_valid():
     raw = {
@@ -63,6 +66,7 @@ def test_clean_bus_records_filters_bad():
 
 # ── Train cleaning ────────────────────────────────────────────
 
+
 def test_clean_train_record_valid():
     raw = {
         "trainno": "9315",
@@ -90,6 +94,7 @@ def test_clean_train_record_no_delay():
 
 # ── Alert cleaning ────────────────────────────────────────────
 
+
 def test_clean_alert_record():
     raw = {
         "route_id": "33",
@@ -110,17 +115,22 @@ def test_clean_alert_record_no_route():
 
 # ── Offset parsing ────────────────────────────────────────────
 
+
 def test_parse_offset_numeric_string():
     assert _parse_offset("3") == 180
+
 
 def test_parse_offset_negative():
     assert _parse_offset("-1") == -60
 
+
 def test_parse_offset_zero():
     assert _parse_offset("0") == 0
 
+
 def test_parse_offset_none():
     assert _parse_offset(None) is None
+
 
 def test_parse_offset_text():
     # '2 min late' → 2 minutes → 120 seconds

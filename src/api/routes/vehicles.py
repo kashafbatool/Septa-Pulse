@@ -14,8 +14,12 @@ router = APIRouter()
 
 @router.get("/live")
 def get_live_vehicles(
-    route: Optional[str] = Query(None, description="Filter by route (e.g. '33', 'Media/Wawa')"),
-    mode: Optional[str] = Query(None, description="Filter by mode: bus | trolley | rail"),
+    route: Optional[str] = Query(
+        None, description="Filter by route (e.g. '33', 'Media/Wawa')"
+    ),
+    mode: Optional[str] = Query(
+        None, description="Filter by mode: bus | trolley | rail"
+    ),
     db: Session = Depends(get_db),
 ):
     """Return vehicle positions from the last 90 seconds."""
@@ -107,7 +111,9 @@ def get_vehicle_history(
 
 @router.get("/routes")
 def get_routes(
-    mode: Optional[str] = Query(None, description="Filter by mode: bus | trolley | rail"),
+    mode: Optional[str] = Query(
+        None, description="Filter by mode: bus | trolley | rail"
+    ),
     db: Session = Depends(get_db),
 ):
     """Return all routes seen in the last 24 hours."""
