@@ -64,9 +64,11 @@ class SEPTAClient:
             buses = data.get("bus", [])
             if not buses:
                 # Log top-level keys so we can detect format changes
-                logger.info("TransitViewAll keys: %s | counts: %s",
-                            list(data.keys()),
-                            {k: len(v) for k, v in data.items() if isinstance(v, list)})
+                logger.info(
+                    "TransitViewAll keys: %s | counts: %s",
+                    list(data.keys()),
+                    {k: len(v) for k, v in data.items() if isinstance(v, list)},
+                )
             return buses
         logger.warning("TransitViewAll unexpected response type: %s", type(data))
         return []
