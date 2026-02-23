@@ -105,16 +105,21 @@ function updateLiveMarkers(data) {
   const seen = new Set();
 
   (data.vehicles || []).forEach((v) => {
+    if (!v.lat || !v.lon) return; // skip records without coordinates
     seen.add(v.vehicle_id);
 
-    if (vehicleMarkers[v.vehicle_id]) {
-      vehicleMarkers[v.vehicle_id]
-        .setLatLng([v.lat, v.lon])
-        .setPopupContent(buildPopup(v));
-    } else {
-      const marker = makeMarker(v);
-      marker.addTo(map);
-      vehicleMarkers[v.vehicle_id] = marker;
+    try {
+      if (vehicleMarkers[v.vehicle_id]) {
+        vehicleMarkers[v.vehicle_id]
+          .setLatLng([v.lat, v.lon])
+          .setPopupContent(buildPopup(v));
+      } else {
+        const marker = makeMarker(v);
+        marker.addTo(map);
+        vehicleMarkers[v.vehicle_id] = marker;
+      }
+    } catch (e) {
+      console.warn("[SEPTA Pulse] Failed to render vehicle", v.vehicle_id, e);
     }
   });
 

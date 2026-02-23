@@ -41,13 +41,15 @@ async function refreshMap() {
   try {
     if (state.layer === "live") {
       const data = await fetchLiveVehicles(state.mode, state.route);
+      console.log("[SEPTA Pulse] live vehicles:", data.count, data);
       updateLiveMarkers(data);
     } else {
       const data = await fetchHeatmap(24, state.mode);
+      console.log("[SEPTA Pulse] heatmap features:", data.count);
       updateHeatmap(data);
     }
   } catch (e) {
-    console.warn("Map refresh failed:", e);
+    console.error("[SEPTA Pulse] Map refresh failed:", e);
     setPulse("stale");
   }
 }

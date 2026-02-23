@@ -25,27 +25,26 @@ def get_live_vehicles(
     """Return vehicle positions from the last 90 seconds."""
     since = datetime.now(timezone.utc) - timedelta(seconds=90)
 
-    sql = """
+    # Build WHERE conditions as a list to avoid string-formatting SQL
+    conditions = ["fetched_at >= :since"]
+    params: dict = {"since": since}
+
+    if route:
+        conditions.append("route = :route")
+        params["route"] = route
+    if mode:
+        conditions.append("mode = :mode")
+        params["mode"] = mode
+
+    where_clause = " AND ".join(conditions)
+
+    sql = f"""
         SELECT DISTINCT ON (vehicle_id)
             id, vehicle_id, route, mode, lat, lon, heading, speed, offset_sec, destination, fetched_at
         FROM vehicle_positions
-        WHERE fetched_at >= :since
-        {route_filter}
-        {mode_filter}
+        WHERE {where_clause}
         ORDER BY vehicle_id, fetched_at DESC
     """
-    params: dict = {"since": since}
-    route_filter = ""
-    mode_filter = ""
-
-    if route:
-        route_filter = "AND route = :route"
-        params["route"] = route
-    if mode:
-        mode_filter = "AND mode = :mode"
-        params["mode"] = mode
-
-    sql = sql.format(route_filter=route_filter, mode_filter=mode_filter)
     rows = db.execute(text(sql), params).fetchall()
 
     return {
