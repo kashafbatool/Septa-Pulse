@@ -56,9 +56,18 @@ def bulk_insert_positions(
 
 
 def bulk_insert_alerts(records: list[AlertRecord], session: Session) -> int:
-    """Insert alert records. Returns number of rows inserted."""
+    """Replace current alerts: delete stale rows, insert fresh ones.
+
+    Alerts are ephemeral (current service status), so we only keep the latest
+    snapshot rather than accumulating history, which prevents disk bloat.
+    """
     if not records:
         return 0
+
+    # Delete alerts older than 2 hours to keep the table small
+    session.execute(
+        text("DELETE FROM alerts WHERE fetched_at < NOW() - INTERVAL '2 hours'")
+    )
 
     rows = [
         {
