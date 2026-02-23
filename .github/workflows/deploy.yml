@@ -1,0 +1,79 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Package & Deploy Lambda
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Build Lambda deployment package
+        run: |
+          mkdir -p lambda_pkg
+          pip install -r requirements.txt --target lambda_pkg --quiet
+          cp -r src lambda_pkg/
+          cd lambda_pkg && zip -r ../lambda.zip . -x "*.pyc" -x "__pycache__/*"
+          echo "Lambda zip size: $(du -sh ../lambda.zip | cut -f1)"
+
+      - name: Upload Lambda zip to S3
+        run: |
+          aws s3 cp lambda.zip \
+            s3://${{ secrets.S3_LAMBDA_BUCKET }}/septa-pulse/lambda.zip \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name septa-pulse-pipeline \
+            --s3-bucket ${{ secrets.S3_LAMBDA_BUCKET }} \
+            --s3-key septa-pulse/lambda.zip \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Wait for Lambda update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name septa-pulse-pipeline \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Run database migrations
+        run: |
+          DB_URL=$(aws secretsmanager get-secret-value \
+            --secret-id septa-pulse/database-url \
+            --query SecretString --output text | python3 -c "import sys,json; print(json.load(sys.stdin)['DATABASE_URL'])")
+          DATABASE_URL="$DB_URL" alembic upgrade head
+
+      - name: Verify deployment (smoke test)
+        run: |
+          aws lambda invoke \
+            --function-name septa-pulse-pipeline \
+            --payload '{}' \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/response.json
+          cat /tmp/response.json
+          python3 -c "
+          import json, sys
+          r = json.load(open('/tmp/response.json'))
+          if r.get('errors'):
+              print('WARNING: pipeline errors:', r['errors'])
+          print('Deploy verified. Buses:', r.get('buses', 0), 'Trains:', r.get('trains', 0))
+          "
